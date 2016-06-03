@@ -165,7 +165,7 @@ def list_labs(request):
     # retrieve a min date for labs
     oldest_params = {'limit': '1', 'order_by': 'collected_at'}
     if lab_status in LAB_STATUSES:
-        oldest_params['status_code_identifier'] = lab_status
+        oldest_params['status_identifier'] = lab_status
     if record_id:	
         resp, content = client.generic_list(record_id=record_id, data_model="LabResult", body=oldest_params)
     else:
