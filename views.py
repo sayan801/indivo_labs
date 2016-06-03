@@ -194,7 +194,7 @@ def list_labs(request):
 
     # set params for lab query
     parameters = {'limit': limit, 'offset': offset, 'order_by': order_by}
-    parameters.update({'date_range': 'date*' + date_start_string + '*' + date_end_string})
+    parameters.update({'date_range': 'collected_at*' + date_start_string + '*' + date_end_string})
     if lab_status in LAB_STATUSES:
         parameters['status_identifier'] = lab_status
     if record_id:
