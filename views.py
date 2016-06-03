@@ -133,7 +133,7 @@ def parse_labs(labs):
 def show_lab(request, lab_id):
     client = get_indivo_client(request)
     record_id = request.session.get('record_id')
-    resp, doc = client.record_specific_document(record_id=record_id, document_id=lab_id)
+    resp, doc = client.record_document(record_id=record_id, document_id=lab_id)
     if resp['status'] != '200':
         # TODO: handle errors
         raise Exception("Error loading original lab document: %s"%doc)
