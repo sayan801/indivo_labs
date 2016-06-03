@@ -96,19 +96,19 @@ def parse_labs(labs):
 
         # Parse the lab's date
         try:
-            d = dateparse.parse_datetime(lab['date'])
+            d = dateparse.parse_datetime(lab['collected_at'])
             if d and timezone.is_naive(d):
                 # dates from Indivo should be UTC
                 d = timezone.make_aware(d, timezone.utc)
         except ValueError as e:
             d = 'parse error'
-        lab['date'] = d
+        lab['collected_at'] = d
         
         # Normalize the lab's status text
-        if lab['status_code_identifier'] in LAB_STATUSES:
-            lab['status_code_title'] = LAB_STATUSES[lab['status_code_identifier']]
+        if lab['status_identifier'] in LAB_STATUSES:
+            lab['status_title'] = LAB_STATUSES[lab['status_identifier']]
         else:
-            lab['status_code_title'] = 'Unknown'
+            lab['status_title'] = 'Unknown'
 
         # Determine if the lab is abnormal
         try:
@@ -146,7 +146,7 @@ def list_labs(request):
     # read in query params
     limit = int(request.GET.get('limit', 15))
     offset = int(request.GET.get('offset', 0))
-    order_by = request.GET.get('order_by', 'date') # name_code_title, created_at, date
+    order_by = request.GET.get('order_by', 'collected_at') # name_code_title, created_at, date
     lab_status = request.GET.get('lab_status', 'All') # final, corrected, preliminary
     lab_status_display = LAB_STATUSES.get(lab_status, 'All')
 
@@ -163,10 +163,10 @@ def list_labs(request):
     client = get_indivo_client(request)
 
     # retrieve a min date for labs
-    oldest_params = {'limit': '1', 'order_by': 'date'}
+    oldest_params = {'limit': '1', 'order_by': 'collected_at'}
     if lab_status in LAB_STATUSES:
         oldest_params['status_code_identifier'] = lab_status
-    if record_id:
+    if record_id:	
         resp, content = client.generic_list(record_id=record_id, data_model="LabResult", body=oldest_params)
     else:
         resp, content = client.carenet_generic_list(carenet_id=carenet_id, data_model="LabResult", body=oldest_params)
@@ -175,7 +175,7 @@ def list_labs(request):
         raise Exception("Error fetching oldest lab: %s"%content)
     oldest_lab = parse_labs(simplejson.loads(content))
     if len(oldest_lab) > 0:
-        oldest_lab_date = oldest_lab[0]['date']
+        oldest_lab_date = oldest_lab[0]['collected_at']
     else:
         oldest_lab_date = datetime.datetime.utcnow()
 
@@ -196,7 +196,7 @@ def list_labs(request):
     parameters = {'limit': limit, 'offset': offset, 'order_by': order_by}
     parameters.update({'date_range': 'date*' + date_start_string + '*' + date_end_string})
     if lab_status in LAB_STATUSES:
-        parameters['status_code_identifier'] = lab_status
+        parameters['status_identifier'] = lab_status
     if record_id:
         resp, content = client.generic_list(record_id=record_id, data_model="LabResult", body=parameters)
     else:
